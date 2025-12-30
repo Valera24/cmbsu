@@ -6,10 +6,8 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_change_me'
 
-# --- ПАРОЛЬ ПРЕПОДАВАТЕЛЯ ---
 ADMIN_PASSWORD = "1234"
 
-# --- ПУТИ ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
 LECTURES_FOLDER = os.path.join(STATIC_FOLDER, 'lectures')
@@ -20,7 +18,6 @@ JSON_FILE = 'lectures.json'
 DEADLINES_FILE = 'deadlines.json'
 SCHEDULE_FILE = 'schedule.json'
 
-# --- СТАНДАРТНОЕ РАСПИСАНИЕ ---
 DEFAULT_SCHEDULE = {
     "semester_end": "2025-05-31",
     "classes": [
@@ -196,12 +193,9 @@ def deadlines():
 
 @app.route('/download/<path:filepath>')
 def download_file(filepath):
-    # Безопасная проверка всех папок
     for folder in [LECTURES_FOLDER, MATERIALS_FOLDER, LABS_FOLDER]:
-        # Также проверяем подпапки лекций
         if os.path.exists(os.path.join(folder, filepath)):
             return send_from_directory(folder, filepath)
-        # Если файл в подпапке (например lectures/1_sem/file.pdf)
         if folder == LECTURES_FOLDER:
             for sub in os.listdir(folder):
                 if os.path.exists(os.path.join(folder, sub, filepath)):
@@ -209,7 +203,6 @@ def download_file(filepath):
     return "Файл не найден", 404
 
 
-# --- АДМИН ПАНЕЛЬ ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -233,7 +226,6 @@ def admin():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        # --- 1. ЗАГРУЗКА ФАЙЛА ---
         if 'file_upload' in request.files:
             file = request.files['file_upload']
             category = request.form.get('category')
@@ -248,7 +240,6 @@ def admin():
                     target_folder = os.path.join(LECTURES_FOLDER, category)
 
                 os.makedirs(target_folder, exist_ok=True)
-                # Важно: имя файла сохраняем как есть
                 filename = os.path.basename(file.filename)
                 try:
                     file.save(os.path.join(target_folder, filename))
@@ -258,19 +249,16 @@ def admin():
             else:
                 flash('Файл не выбран!', 'error')
 
-        # --- 2. ДОБАВЛЕНИЕ ДЕДЛАЙНА ЧЕРЕЗ ФОРМУ (НОВОЕ!) ---
         elif 'add_deadline_btn' in request.form:
             try:
                 new_task = {
                     "subject": request.form.get('subject'),
                     "title": request.form.get('title'),
-                    # Формат из input type="date" всегда YYYY-MM-DD
                     "date": request.form.get('date'),
                     "type": request.form.get('type'),
                     "file": request.form.get('file_select')  # Может быть пустым
                 }
 
-                # Загружаем текущий список и добавляем
                 current_deadlines = load_json_or_create_default(DEADLINES_FILE, [])
                 if not isinstance(current_deadlines, list): current_deadlines = []
 
@@ -281,7 +269,6 @@ def admin():
             except Exception as e:
                 flash(f'Ошибка добавления: {e}', 'error')
 
-        # --- 3. СОХРАНЕНИЕ JSON ВРУЧНУЮ ---
         elif 'schedule_json' in request.form:
             try:
                 if request.form.get('schedule_json'):
@@ -292,11 +279,9 @@ def admin():
             except json.JSONDecodeError:
                 flash('Ошибка JSON! Проверьте запятые.', 'error')
 
-    # --- СБОР ДАННЫХ ---
     materials_files = os.listdir(MATERIALS_FOLDER) if os.path.exists(MATERIALS_FOLDER) else []
     labs_files = os.listdir(LABS_FOLDER) if os.path.exists(LABS_FOLDER) else []
 
-    # Фильтруем скрытые файлы
     materials_files = [f for f in materials_files if not f.startswith('.')]
     labs_files = [f for f in labs_files if not f.startswith('.')]
 
@@ -315,8 +300,6 @@ def admin():
                            materials_files=materials_files,
                            labs_files=labs_files)
 
-
-# --- НОВЫЙ РОУТ: УДАЛЕНИЕ ФАЙЛОВ ---
 @app.route('/admin/delete_file', methods=['POST'])
 def delete_file():
     if not session.get('logged_in'):
@@ -333,7 +316,6 @@ def delete_file():
 
     if target_folder and filename:
         file_path = os.path.join(target_folder, filename)
-        # Простая защита от выхода из папки
         if '..' in filename or '/' in filename:
             flash('Недопустимое имя файла', 'error')
         elif os.path.exists(file_path):
@@ -351,7 +333,6 @@ def delete_file():
 if __name__ == '__main__':
     for folder in [LECTURES_FOLDER, MATERIALS_FOLDER, LABS_FOLDER]:
         os.makedirs(folder, exist_ok=True)
-    # Создаем папки семестров по умолчанию
     for i in range(1, 4):
         os.makedirs(os.path.join(LECTURES_FOLDER, f"{i}_sem"), exist_ok=True)
     app.run()
