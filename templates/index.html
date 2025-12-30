@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if not semesters %}
+        <div class="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">Здесь пока пусто</h3>
+            <p class="text-slate-500">Добавьте лекции в папки.</p>
+        </div>
+    {% endif %}
+
+    {% for semester in semesters %}
+    <section class="mb-24">
+        <div class="flex items-center gap-4 mb-10">
+            <div class="h-10 w-2 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full shadow-lg shadow-blue-500/30"></div>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">{{ semester.title }}</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for file in semester.files %}
+            <div class="glass-card rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white group flex flex-col h-full relative overflow-hidden">
+                <div class="absolute -right-4 -top-6 text-9xl font-black text-slate-100 group-hover:text-blue-50 transition select-none z-0">{{ loop.index }}</div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-start justify-between mb-5">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 leading-snug mb-3 group-hover:text-blue-600 transition">{{ file.name }}</h3>
+                    <div class="text-sm text-slate-500 leading-relaxed mb-8 flex-grow prose prose-sm max-w-none">{{ file.description }}</div>
+                    <div class="flex gap-3 mt-auto pt-5 border-t border-slate-100">
+                        <a href="{{ url_for('download_file', filepath=file.path) }}" target="_blank" class="flex-1 py-2.5 px-4 bg-white border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-600 font-semibold rounded-xl text-center transition text-sm">Читать</a>
+                        <a href="{{ url_for('download_file', filepath=file.path) }}" download class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-center transition shadow-lg shadow-blue-500/30 text-sm">Скачать</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+{% endblock %}

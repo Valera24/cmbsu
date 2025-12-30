@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-16">
+
+    {% if tests %}
+    <section>
+        <div class="flex items-center gap-4 mb-8">
+            <div class="h-10 w-2 bg-red-600 rounded-full shadow-lg shadow-red-500/30"></div>
+            <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Ближайшие контрольные</h2>
+        </div>
+
+        <div class="grid gap-4">
+            {% for test in tests %}
+            <div class="bg-red-50 border border-red-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+
+                <div class="flex items-center gap-4">
+                    <div class="bg-white text-red-600 font-black text-2xl h-16 w-16 rounded-xl flex flex-col items-center justify-center shadow-sm border border-red-100">
+                        <span>{{ test.date_str.split('.')[0] }}</span>
+                        <span class="text-[10px] uppercase tracking-wide text-red-400">{{ test.date_str.split('.')[1] }}</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-red-400 uppercase tracking-widest">{{ test.weekday }}</span>
+                        <h3 class="text-xl font-bold text-slate-800">{{ test.title }}</h3>
+                        <p class="text-sm text-slate-500 font-medium">{{ test.subject }}</p>
+                    </div>
+                </div>
+
+                <div class="bg-white px-4 py-2 rounded-lg border border-red-100 text-red-600 font-bold text-sm whitespace-nowrap shadow-sm">
+                    {% if test.days_left == 0 %}Сегодня{% elif test.days_left == 1 %}Завтра{% else %}Через {{ test.days_left }} дн.{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+    <section>
+        <div class="flex items-center gap-4 mb-8">
+            <div class="h-10 w-2 bg-indigo-600 rounded-full shadow-lg shadow-indigo-500/30"></div>
+            <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Сдача работ</h2>
+        </div>
+
+        {% if not labs %}
+            <div class="text-center py-10 bg-white rounded-2xl border border-slate-200 border-dashed">
+                <p class="text-slate-400">Нет активных лабораторных работ.</p>
+            </div>
+        {% endif %}
+
+        <div class="grid gap-4">
+            {% for task in labs %}
+            <div class="relative bg-white rounded-2xl p-6 border border-slate-200 transition hover:shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4
+                {% if task.status == 'expired' %} opacity-60 grayscale bg-slate-50 {% endif %}">
+
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded">
+                            {{ task.subject }}
+                        </span>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-800 leading-tight {% if task.status == 'expired' %} line-through {% endif %}">
+                        {{ task.title }}
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1 mb-3">Дедлайн: <span class="font-semibold">{{ task.date_str }}</span></p>
+
+                    {% if task.file %}
+                    <a href="{{ url_for('download_file', filepath=task.file) }}" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-indigo-100 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Скачать задание
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="flex-shrink-0 text-right">
+                    {% if task.status == 'expired' %}
+                        <div class="text-slate-400 font-bold flex items-center justify-end gap-2">
+                            <span>Просрочено</span> 💀
+                        </div>
+                        <p class="text-xs text-slate-400">на {{ task.days_left|abs }} дн.</p>
+                    {% else %}
+                        <div class="text-slate-600 font-bold bg-slate-100 px-4 py-2 rounded-xl text-sm border border-slate-200">
+                            Осталось {{ task.days_left }} дн.
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

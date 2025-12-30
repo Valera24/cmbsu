@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center gap-4 mb-10">
+        <div class="h-10 w-2 bg-purple-600 rounded-full shadow-lg"></div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Дополнительные материалы</h2>
+    </div>
+
+    {% if not files %}
+        <div class="text-center py-10 bg-white rounded-xl border border-slate-200">
+            <p class="text-slate-500">Папка <code>static/materials</code> пуста.</p>
+        </div>
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for file in files %}
+            <a href="{{ url_for('download_file', filepath=file.name) }}" download class="flex items-center p-4 bg-white rounded-xl border border-slate-200 hover:border-purple-400 hover:shadow-lg transition group">
+                <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold uppercase text-xs group-hover:bg-purple-600 group-hover:text-white transition">
+                    {{ file.ext }}
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition">{{ file.name }}</h3>
+                    <p class="text-xs text-slate-400">Нажмите, чтобы скачать</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

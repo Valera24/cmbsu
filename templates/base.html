@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учебный портал</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+
+    <script>
+      MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+
+        /* Стили карточек (Светлая тема) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+        }
+
+        /* --- МАГИЯ ТЕМНОЙ ТЕМЫ --- */
+        /* Эти стили автоматически перекрашивают элементы, когда включен dark mode */
+
+        /* Фон страницы */
+        html.dark body {
+            background-image: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+            color: #e2e8f0;
+        }
+
+        /* Карточки */
+        html.dark .glass-card {
+            background: rgba(30, 41, 59, 0.85); /* Темно-синий прозрачный */
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Текст */
+        html.dark .text-slate-800 { color: #f1f5f9; } /* Заголовки станут белыми */
+        html.dark .text-slate-500 { color: #94a3b8; } /* Описания станут светло-серыми */
+        html.dark .text-slate-600 { color: #cbd5e1; }
+
+        /* Блоки с белым фоном (например, списки) */
+        html.dark .bg-white {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+
+        /* Второстепенные фоны */
+        html.dark .bg-slate-50, html.dark .bg-slate-100 {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+
+        /* Хедер (Шапка) */
+        html.dark header {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-color: #334155;
+        }
+
+        /* Таблицы */
+        .ranking-table table { width: 100%; border-collapse: collapse; }
+        .ranking-table th { background-color: #eff6ff; color: #1e40af; font-weight: 800; padding: 12px; text-transform: uppercase; font-size: 0.75rem; }
+        .ranking-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+        .ranking-table tr:hover td { background-color: #f8fafc; }
+
+        /* Таблицы в темной теме */
+        html.dark .ranking-table th { background-color: #1e3a8a; color: #bfdbfe; }
+        html.dark .ranking-table td { border-bottom-color: #334155; color: #e2e8f0; }
+        html.dark .ranking-table tr:hover td { background-color: #1e293b; }
+
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 transition-colors duration-300">
+        <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <a href="/" class="text-2xl font-black text-blue-600 tracking-tight hover:opacity-80 transition flex items-center gap-2">
+                CM
+            </a>
+
+            <div class="flex items-center gap-4">
+                <nav class="flex bg-slate-100 p-1 rounded-xl dark:bg-slate-800 transition-colors">
+                    <a href="/" class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition {{ 'bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400' if request.path == '/' else 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                        Лекции
+                    </a>
+                    <a href="/materials" class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition {{ 'bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400' if request.path == '/materials' else 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                        Материалы
+                    </a>
+                    <a href="/schedule" class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition {{ 'bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400' if request.path == '/schedule' else 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                        Расписание
+                    </a>
+                    <a href="/deadlines" class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition {{ 'bg-white text-blue-600 shadow-sm dark:bg-slate-700 dark:text-blue-400' if request.path == '/deadlines' else 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                        Дедлайны
+                    </a>
+                </nav>
+
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 transition">
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 max-w-6xl flex-grow transition-opacity duration-500">
+        {% block content %}{% endblock %}
+    </main>
+
+
+    <script>
+        var themeToggleBtn = document.getElementById('theme-toggle');
+        var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Показать нужную иконку при загрузке
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // Переключаем иконки
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // Если уже темная -> включаем светлую
+            if (localStorage.theme === 'dark') {
+                localStorage.theme = 'light';
+                document.documentElement.classList.remove('dark');
+            } else {
+                // Если светлая -> включаем темную
+                localStorage.theme = 'dark';
+                document.documentElement.classList.add('dark');
+            }
+        });
+    </script>
+</body>
+</html>
